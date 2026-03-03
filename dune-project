@@ -20,7 +20,9 @@
  (name infv)
  (synopsis "Inference Language with Why3")
  (description "Inference Language with Why3")
- (depends ocaml why3)
+ (depends 
+    (ocaml (>= 4.09.1)) 
+    (why3 (= 1.5.1)))
  (tags
   ("why3")))
 
