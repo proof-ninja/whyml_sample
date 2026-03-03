@@ -1,6 +1,0 @@
-use int.Int
-
-let add (x: int) (y: int) : int
-  ensures { result = x + y }
-= x + y
-

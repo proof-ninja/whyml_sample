@@ -1,0 +1,4 @@
+(executable
+ (public_name infv)
+ (name main)
+ (libraries infv why3))
