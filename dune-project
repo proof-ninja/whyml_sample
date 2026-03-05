@@ -22,7 +22,7 @@
  (description "Inference Language with Why3")
  (depends 
     (ocaml (>= 4.09.1)) 
-    (why3 (= 1.5.1)))
+    (why3 (= 1.8.2)))
  (tags
   ("why3")))
 
