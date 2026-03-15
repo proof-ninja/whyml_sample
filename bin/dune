@@ -1,4 +1,4 @@
-(executable
- (public_name infv)
- (name main)
+(executables
+ (public_names examples)
+ (names examples)
  (libraries infv why3))
