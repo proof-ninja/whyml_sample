@@ -28,6 +28,7 @@ let mk_Pvar str = mk_pattern (Pvar (mk_ident str))
 (* 二項演算 *)
 let eq t1 t2 = ~@ (Tidapp (mk_qualid "=", [t1; t2]))
 let plus t1 t2 = ~@ (Tidapp (mk_qualid "+", [t1; t2]))
+let ge t1 t2 = ~@ (Tidapp (mk_qualid ">", [t1; t2]))
 
 (* assert 文 *)
 let mk_assert t = ~! (Eassert (Assert, t))
