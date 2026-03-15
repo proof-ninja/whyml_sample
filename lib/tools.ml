@@ -14,14 +14,22 @@ let mk_ident str = {
 }
 let mk_qualid str = Qident (mk_ident str) 
 
-(* 変数項 *)
+(* 変数パターン *)
+let mk_pattern str = {
+  pat_desc = str;
+  pat_loc = pos
+}
+
+(* 変数 *)
 let mk_Tvar str = ~@ (Tident (mk_qualid str))
+let mk_Evar str = ~! (Epure (mk_Tvar str))
+let mk_Pvar str = mk_pattern (Pvar (mk_ident str))
 
-(* 変数文？ *)
-let mk_Evar str = ~! (Eident (mk_qualid str))
-
-(* 等式項 *)
+(* 二項演算 *)
 let eq t1 t2 = ~@ (Tidapp (mk_qualid "=", [t1; t2]))
+let plus t1 t2 = ~@ (Tidapp (mk_qualid "+", [t1; t2]))
 
 (* assert 文 *)
 let mk_assert t = ~! (Eassert (Assert, t))
+(* assume 文 *)
+let mk_assume t = ~! (Eassert (Assume, t))
