@@ -92,3 +92,16 @@ let example4 : expr = ~! (Esequence (
         assert(n % m == 0);
       }
     } *)
+
+let spec5 =  {
+  sp_pre =[ge (mk_Tvar "n") (~@ (Tconst (int_const_of_int 1)))];
+  sp_post = [(pos, [])]; (* TODO *)
+  sp_xpost = [];
+  sp_reads = [];  
+  sp_writes = [];
+  sp_alias = [];
+  sp_variant = [];
+  sp_checkrw = false;
+  sp_diverge = false;
+  sp_partial = false
+}
