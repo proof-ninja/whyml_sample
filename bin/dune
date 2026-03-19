@@ -1,4 +1,4 @@
 (executables
- (public_names examples)
- (names examples)
- (libraries infv why3))
+ (public_names verify)
+ (names verify)
+ (libraries infv why3 dolog))

@@ -1,7 +1,7 @@
 open Why3.Ptree
 open Why3.Ity
 open Why3.Constant
-open Infv.Tools
+open Tools
 
 (* ----- example 1 ----- 
     assert (forall x, x == x) *)
