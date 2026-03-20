@@ -1,4 +1,5 @@
 open Why3.Ptree
+open Why3.Ident
 
 let pos = Why3.Loc.dummy_position
 
@@ -26,7 +27,7 @@ let mk_Evar str = ~! (Epure (mk_Tvar str))
 let mk_Pvar str = mk_pattern (Pvar (mk_ident str))
 
 (* 二項演算 *)
-let eq t1 t2 = ~@ (Tidapp (mk_qualid "=", [t1; t2]))
+let eq t1 t2 = ~@ (Tidapp (mk_qualid op_equ, [t1; t2]))
 let plus t1 t2 = ~@ (Tidapp (mk_qualid "+", [t1; t2]))
 let ge t1 t2 = ~@ (Tidapp (mk_qualid ">", [t1; t2]))
 

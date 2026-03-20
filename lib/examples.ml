@@ -8,11 +8,11 @@ open Tools
 (* 量化子をつける *)
 let mk_binder x ty : binder = (pos, 
   Some (mk_ident x), 
-  true, (* goast かどうか...「実行」されるか，「証明専用」か by ChatGPT *)
+  false, (* goast かどうか...「実行」されるか，「証明専用」か by ChatGPT *)
   ty) (* x の型情報 *)
 let example1 : expr = mk_assert (~@ (Tquant (
   DTforall, 
-  [mk_binder "x" None], 
+  [mk_binder "x" (Some (PTtyvar (mk_ident "i32")))], 
   [], (* トリガー？ *)
   eq (mk_Tvar "x") (mk_Tvar "x"))))
 
@@ -22,13 +22,13 @@ let example1 : expr = mk_assert (~@ (Tquant (
     if n then assert (n == true)
     else assert (n == false) *)
 
-let example2 = Elet (mk_ident "n", 
+let example2 = ~! (Elet (mk_ident "n", 
   false, (* goast ではない *)
   RKlocal, (* local 変数 *)
   ~! Etrue, (*代入される値 *)
   ~! (Eif (mk_Evar "n", 
     mk_assert (eq (mk_Tvar "n") (~@ Ttrue)),
-    mk_assert (eq (mk_Tvar "n") (~@ Tfalse)))))
+    mk_assert (eq (mk_Tvar "n") (~@ Tfalse))))))
 
 
 (* ----- example 3 ----- 

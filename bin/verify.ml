@@ -1,4 +1,6 @@
 open Why3
+open Infv.Tools
+open Infv.Examples
 module Log = Dolog.Log
 
 let type_check env path filename mlw_file =
@@ -7,9 +9,8 @@ let type_check env path filename mlw_file =
      Log.error "Type check error: %s: %s" filename (Printexc.to_string e);
      exit 1
 
-(* let build_mods env name prog =
-  let (mod_name, decls) = WhyMl.of_program name prog in
-  let mlw_file = Ptree.Modules [(mod_name, decls)] in
+let build_mods env name expr =
+  let mlw_file = Ptree.Modules [(mk_ident name, [Dlet (mk_ident "foo", true, RKfunc, expr)])] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
         (Mlw_printer.pp_mlw_file ~attr:true) mlw_file
@@ -25,13 +26,13 @@ let extract_tasks mods : Task.task list =
     List.rev_append tasks acc
   ) mods []
 
-let verify name prog =
+let verify name expr =
   (* Initialize config and env *)
   let config = Whyconf.init_config None in
   let main = Whyconf.get_main config in
   let env = Env.create_env (Whyconf.loadpath main) in
 
-  let mods = build_mods env name prog in
+  let mods = build_mods env name expr in
   let tasks = extract_tasks mods in
 
   Log.debug "split %d tasks" (List.length tasks);
@@ -48,7 +49,7 @@ let verify name prog =
   if Whyconf.Mprover.is_empty provers then begin
       let all_provers = Whyconf.get_provers config in
       Whyconf.Mprover.keys all_provers
-      |> fun ps -> prerr_endline (!%"prover length: %d" (List.length ps)); ps
+      |> fun ps -> prerr_endline (Printf.sprintf "prover length: %d" (List.length ps)); ps
       |>  List.iter (fun key -> prerr_endline key.Whyconf.prover_name);
       failwith (prover_name ^ " is not installed or configured.");
     end;
@@ -59,4 +60,7 @@ let verify name prog =
   (* Print theorems of Coq *)
   Format.printf "(* --- Realizeing Task --- *)@\n";
   List.iter (fun task ->
-      Driver.print_task coq_driver Format.std_formatter task) tasks *)
+      Driver.print_task coq_driver Format.std_formatter task) tasks
+
+
+let _ = verify "ex1" example3
