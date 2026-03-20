@@ -50,9 +50,26 @@ let example3 : expr = expr (Efun (
 
 (* ----- example 4 -----
     assume (n > 0); assert (n > 0) *)
-let example4 : expr = expr (Esequence (
-  mk_assume (tapp ge [(mk_Tvar "n"); (tconst 0)]),
-  mk_assert (tapp ge [(mk_Tvar "n"); (tconst 0)])))
+let spec4 = {
+  sp_pre =[];
+  sp_post = [];
+  sp_xpost = [];
+  sp_reads = [];  
+  sp_writes = [];
+  sp_alias = [];
+  sp_variant = [];
+  sp_checkrw = false;
+  sp_diverge = false;
+  sp_partial = false
+}
+let example4 : expr = expr (Efun (
+  one_binder ~pty:int_type "n", (* 引数 *)
+  None, (* 関数の型 *)
+  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
+  MaskVisible, (* 副作用？ *)
+  spec4, (* 仕様 *)
+  expr (Esequence (mk_assume (tapp ge [(mk_Tvar "n"); (tconst 0)]),
+  mk_assert (tapp ge [(mk_Tvar "n"); (tconst 0)])))))
 
 (* ----- example 5 -----
     fn is_prime(n: u64) -> bool {
