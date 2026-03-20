@@ -1,4 +1,5 @@
 open Why3
+open Ptree_helpers
 open Infv.Tools
 open Infv.Examples
 module Log = Dolog.Log
@@ -10,7 +11,7 @@ let type_check env path filename mlw_file =
      exit 1
 
 let build_mods env name expr =
-  let mlw_file = Ptree.Modules [(mk_ident name, [Dlet (mk_ident "foo", true, RKfunc, expr)])] in
+  let mlw_file = Ptree.Modules [(ident name, [Dlet (ident "foo", true, RKfunc, expr)])] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
         (Mlw_printer.pp_mlw_file ~attr:true) mlw_file
@@ -63,4 +64,4 @@ let verify name expr =
       Driver.print_task coq_driver Format.std_formatter task) tasks
 
 
-let _ = verify "ex1" example3
+let _ = verify "ex1" example1

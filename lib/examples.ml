@@ -1,18 +1,14 @@
-open Why3.Ptree
-open Why3.Ity
-open Why3.Constant
+open Why3
+open Ptree
+open Ptree_helpers
 open Tools
 
 (* ----- example 1 ----- 
     assert (forall x, x == x) *)
 (* 量化子をつける *)
-let mk_binder x ty : binder = (pos, 
-  Some (mk_ident x), 
-  false, (* goast かどうか...「実行」されるか，「証明専用」か by ChatGPT *)
-  ty) (* x の型情報 *)
-let example1 : expr = mk_assert (~@ (Tquant (
+let example1 : expr = mk_assert (term (Tquant (
   DTforall, 
-  [mk_binder "x" (Some (PTtyvar (mk_ident "i32")))], 
+  one_binder ~pty:(PTtyvar (ident "i32")) "x", 
   [], (* トリガー？ *)
   eq (mk_Tvar "x") (mk_Tvar "x"))))
 
@@ -21,14 +17,13 @@ let example1 : expr = mk_assert (~@ (Tquant (
     let n <- true in 
     if n then assert (n == true)
     else assert (n == false) *)
-
-let example2 = ~! (Elet (mk_ident "n", 
+let example2 = expr (Elet (ident "n", 
   false, (* goast ではない *)
   RKlocal, (* local 変数 *)
-  ~! Etrue, (*代入される値 *)
-  ~! (Eif (mk_Evar "n", 
-    mk_assert (eq (mk_Tvar "n") (~@ Ttrue)),
-    mk_assert (eq (mk_Tvar "n") (~@ Tfalse))))))
+  expr Etrue, (*代入される値 *)
+  expr (Eif (mk_Evar "n", 
+    mk_assert (eq (mk_Tvar "n") (term Ttrue)),
+    mk_assert (eq (mk_Tvar "n") (term Tfalse))))))
 
 
 (* ----- example 3 ----- 
@@ -45,19 +40,19 @@ let spec3 = {
   sp_diverge = false;
   sp_partial = false
 }
-let example3 : expr = ~! (Efun (
-  [mk_binder "n" (Some (PTtyvar (mk_ident "i32")))], (* 引数 *)
+let example3 : expr = expr (Efun (
+  one_binder ~pty:(PTtyvar (ident "i32")) "n", (* 引数 *)
   None, (* 関数の型 *)
   mk_Pvar "res", (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
   spec3, (* 仕様 *)
-  ~! (Epure (plus (mk_Tvar "n") (mk_Tvar "n")))))
+  expr (Epure (plus (mk_Tvar "n") (mk_Tvar "n")))))
 
 (* ----- example 4 -----
     assume (n > 0); assert (n > 0) *)
-let example4 : expr = ~! (Esequence (
-  mk_assume (ge (mk_Tvar "n") (~@ (Tconst (int_const_of_int 0)))),
-  mk_assert (ge (mk_Tvar "n") (~@ (Tconst (int_const_of_int 0))))))
+let example4 : expr = expr (Esequence (
+  mk_assume (ge (mk_Tvar "n") (tconst 0)),
+  mk_assert (ge (mk_Tvar "n") (tconst 0))))
 
 (* ----- example 5 -----
     fn is_prime(n: u64) -> bool {
@@ -94,7 +89,7 @@ let example4 : expr = ~! (Esequence (
     } *)
 
 let spec5 =  {
-  sp_pre =[ge (mk_Tvar "n") (~@ (Tconst (int_const_of_int 1)))];
+  sp_pre =[ge (mk_Tvar "n") (tconst 1)];
   sp_post = [(pos, [])]; (* TODO *)
   sp_xpost = [];
   sp_reads = [];  
