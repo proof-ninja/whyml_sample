@@ -1,7 +1,8 @@
 open Why3
 open Ptree
 open Ptree_helpers
-let use_int_Int = use ~import:false (["int";"Int"])
+
+let int_type = PTtyapp(qualid ["int"],[])
 
 let pos = Why3.Loc.dummy_position
 
@@ -11,13 +12,9 @@ let mk_Evar str = evar (qualid [str])
 let mk_Pvar str = pat_var (ident str)
 
 (* 二項演算 *)
-let eq t1 t2 = tapp (qualid [Ident.op_equ]) [t1; t2]
-let plus t1 t2 = 
-  let plus_symbol = qualid ["Int";Ident.op_infix "+"] in 
-  tapp plus_symbol [t1; t2]
-let ge t1 t2 = 
-  let plus_symbol = qualid ["Int";Ident.op_infix ">"] in 
-  tapp plus_symbol [t1; t2]
+let eq = qualid [Ident.op_equ]
+let plus = qualid ["Int";Ident.op_infix "+"] 
+let ge = qualid ["Int";Ident.op_infix ">"] 
 
 (* assert 文 *)
 let mk_assert t = expr (Eassert (Assert, t))
