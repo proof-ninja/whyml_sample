@@ -6,51 +6,50 @@ open Tools
 (* ----- example 1 ----- 
     assert (forall x, x == x) *)
 (* 量化子をつける *)
-let example1 : expr = mk_assert (term (Tquant (
+let expr1 : expr = mk_assert (term (Tquant (
   DTforall, 
   one_binder ~pty:int_type "x", 
   [], (* トリガー？ *)
   tapp eq [(mk_Tvar "x"); (mk_Tvar "x")])))
+let example1 = Dlet (ident "foo", false, RKnone, expr1)
 
 
 (* ----- example 2 ----- 
     let n <- true in 
     if n then assert (n == true)
     else assert (n == false) *)
-let example2 = expr (Elet (ident "n", 
+let expr2 = expr (Elet (ident "n", 
   false, (* goast ではない *)
   RKnone, (* ? *)
   expr Etrue, (*代入される値 *)
   expr (Eif (mk_Evar "n", 
     mk_assert (tapp eq [(mk_Tvar "n"); (term Ttrue)]),
     mk_assert (tapp eq [(mk_Tvar "n"); (term Tfalse)])))))
+let example2 = Dlet (ident "foo", false, RKnone, expr2)
 
 
 (* ----- example 3 ----- 
     foo = fun n => n + n について forall i, assert (foo i == i + i) *)
-let spec3 = {
-  sp_pre =[];
-  sp_post = [(pos, [(mk_Pvar "res", tapp eq [(mk_Tvar "res"); (tapp plus [(mk_Tvar "n"); (mk_Tvar "n")])])])];
-  sp_xpost = [];
-  sp_reads = [];  
-  sp_writes = [];
-  sp_alias = [];
-  sp_variant = [];
-  sp_checkrw = false;
-  sp_diverge = false;
-  sp_partial = false
-}
-let example3 : expr = expr (Efun (
+let expr3 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
-  spec3, (* 仕様 *)
+  empty_spec, (* 仕様 *)
   eapp plus [(mk_Evar "n"); (mk_Evar "n")]))
+let example3_fun = Dlet (ident "foo", false, RKfunc, expr3)
+
+let spec3 : expr =  mk_assert (term (Tquant (
+  DTforall, 
+  one_binder ~pty:int_type "n", 
+  [], (* トリガー？ *)
+  tapp eq [(tapp (qualid ["foo"]) [mk_Tvar "n"]); (tapp plus [mk_Tvar "n"; mk_Tvar "n"])])))  
+let example3_spec = Dlet (ident "spec", false, RKnone, spec3)
+
 
 (* ----- example 4 -----
     assume (n > 0); assert (n > 0) *)
-let example4 : expr = expr (Efun (
+let expr4 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
@@ -58,6 +57,8 @@ let example4 : expr = expr (Efun (
   empty_spec, (* 仕様 *)
   expr (Esequence (mk_assume (tapp ge [(mk_Tvar "n"); (tconst 0)]),
   mk_assert (tapp ge [(mk_Tvar "n"); (tconst 0)])))))
+let example4 = Dlet (ident "foo", false, RKnone, expr4)
+
 
 (* ----- example 5 -----
     fn is_prime(n: u64) -> bool {
@@ -116,10 +117,11 @@ let spec5 =  {
   sp_diverge = false;
   sp_partial = false
 }
-let example5 : expr = expr (Efun (
+let expr5 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
   spec5, (* 仕様 *)
   expr Etrue)) (* TODO *)
+let example5_fun = Dlet (ident "foo", false, RKnone, expr5)

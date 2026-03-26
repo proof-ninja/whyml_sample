@@ -10,9 +10,9 @@ let type_check env path filename mlw_file =
      Log.error "Type check error: %s: %s" filename (Printexc.to_string e);
      exit 1
 
-let build_mods env name expr =
+let build_mods env name decls =
   let use_int = use ~import:false (["int";"EuclideanDivision"]) in (* 使いたいライブラリによって変更 *)
-  let mlw_file = Ptree.Modules [(ident name, [use_int; Dlet (ident "foo", false, RKnone, expr)])] in
+  let mlw_file = Ptree.Modules [(ident name, use_int::decls)] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
         (Mlw_printer.pp_mlw_file ~attr:true) mlw_file
@@ -65,4 +65,4 @@ let verify name expr =
       Driver.print_task coq_driver Format.std_formatter task) tasks
 
 
-let _ = verify "ex1" example5
+let _ = verify "dummy" [example3_fun; example3_spec]
