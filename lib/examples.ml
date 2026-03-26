@@ -50,24 +50,12 @@ let example3 : expr = expr (Efun (
 
 (* ----- example 4 -----
     assume (n > 0); assert (n > 0) *)
-let spec4 = {
-  sp_pre =[];
-  sp_post = [];
-  sp_xpost = [];
-  sp_reads = [];  
-  sp_writes = [];
-  sp_alias = [];
-  sp_variant = [];
-  sp_checkrw = false;
-  sp_diverge = false;
-  sp_partial = false
-}
 let example4 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
-  spec4, (* 仕様 *)
+  empty_spec, (* 仕様 *)
   expr (Esequence (mk_assume (tapp ge [(mk_Tvar "n"); (tconst 0)]),
   mk_assert (tapp ge [(mk_Tvar "n"); (tconst 0)])))))
 
@@ -104,10 +92,21 @@ let example4 : expr = expr (Efun (
         assert(n % m == 0);
       }
     } *)
+let post = term (Tif (mk_Tvar "res", (* if res *)
+  term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
+    prop_implies (prop_and
+        (tapp ge [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+        (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m -> *)
+      (tapp ge [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))), (* mod n m > 0 *)
+  term (Tquant (DTexists, one_binder ~pty:int_type "m", [], (* else exists m, *)
+    prop_and (prop_and
+      (tapp ge [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+      (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
+      (tapp eq [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
 
 let spec5 =  {
   sp_pre =[tapp ge [(mk_Tvar "n"); (tconst 1)]];
-  sp_post = [(pos, [])]; (* TODO *)
+  sp_post = [(pos, [(mk_Pvar "res", post)])];
   sp_xpost = [];
   sp_reads = [];  
   sp_writes = [];
@@ -117,3 +116,10 @@ let spec5 =  {
   sp_diverge = false;
   sp_partial = false
 }
+let example5 : expr = expr (Efun (
+  one_binder ~pty:int_type "n", (* 引数 *)
+  None, (* 関数の型 *)
+  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
+  MaskVisible, (* 副作用？ *)
+  spec5, (* 仕様 *)
+  expr Etrue)) (* TODO *)

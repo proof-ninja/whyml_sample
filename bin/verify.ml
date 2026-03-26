@@ -11,8 +11,9 @@ let type_check env path filename mlw_file =
      exit 1
 
 let build_mods env name expr =
-  let use_int_Int = use ~import:false (["int";"Int"]) in
-  let mlw_file = Ptree.Modules [(ident name, [use_int_Int; Dlet (ident "foo", false, RKnone, expr)])] in
+  let use_int = use ~import:false (["int";"Int"]) in
+  (* let use_bool = use ~import:false (["bool";"Bool"]) in *)
+  let mlw_file = Ptree.Modules [(ident name, [use_int; Dlet (ident "foo", false, RKnone, expr)])] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
         (Mlw_printer.pp_mlw_file ~attr:true) mlw_file
@@ -42,7 +43,7 @@ let verify name expr =
       let msg = Format.asprintf "@[<v 0>== Task %d ==@ \n%a@]@." (i + 1)
                   Why3.Pretty.print_task t
       in
-      Log.debug "%s" msg
+      Log.error "%s" msg
     ) tasks;
 
   let prover_name = "Coq" in
@@ -65,4 +66,4 @@ let verify name expr =
       Driver.print_task coq_driver Format.std_formatter task) tasks
 
 
-let _ = verify "ex1" example3
+let _ = verify "ex1" example5
