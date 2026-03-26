@@ -15,7 +15,7 @@ let mk_Pvar str = pat_var (ident str)
 let eq = qualid [Ident.op_equ]
 let plus = qualid ["Int";Ident.op_infix "+"] 
 let ge = qualid ["Int";Ident.op_infix ">"] 
-let md = qualid ["Int";Ident.op_prefix "mod"] 
+let md = qualid ["EuclideanDivision"; "mod"] 
 
 let prop_and t1 t2 = term (Tbinop (t1, Dterm.DTand, t2))
 let prop_implies t1 t2 = term (Tbinop (t1, Dterm.DTimplies, t2))

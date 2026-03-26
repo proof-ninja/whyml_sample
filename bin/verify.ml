@@ -11,8 +11,7 @@ let type_check env path filename mlw_file =
      exit 1
 
 let build_mods env name expr =
-  let use_int = use ~import:false (["int";"Int"]) in
-  (* let use_bool = use ~import:false (["bool";"Bool"]) in *)
+  let use_int = use ~import:false (["int";"EuclideanDivision"]) in (* 使いたいライブラリによって変更 *)
   let mlw_file = Ptree.Modules [(ident name, [use_int; Dlet (ident "foo", false, RKnone, expr)])] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
@@ -43,7 +42,7 @@ let verify name expr =
       let msg = Format.asprintf "@[<v 0>== Task %d ==@ \n%a@]@." (i + 1)
                   Why3.Pretty.print_task t
       in
-      Log.error "%s" msg
+      Log.debug "%s" msg
     ) tasks;
 
   let prover_name = "Coq" in
