@@ -19,7 +19,7 @@ let example1 : expr = mk_assert (term (Tquant (
     else assert (n == false) *)
 let example2 = expr (Elet (ident "n", 
   false, (* goast ではない *)
-  RKlocal, (* local 変数 *)
+  RKnone, (* ? *)
   expr Etrue, (*代入される値 *)
   expr (Eif (mk_Evar "n", 
     mk_assert (tapp eq [(mk_Tvar "n"); (term Ttrue)]),

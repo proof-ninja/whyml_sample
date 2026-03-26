@@ -23,6 +23,7 @@
  (depends 
     (ocaml (>= 4.09.1)) 
     (why3 (= 1.8.2))
+    (why3-coq (= 1.8.2))
     (dolog (= 6.0.0)))
  (tags
   ("why3")))
