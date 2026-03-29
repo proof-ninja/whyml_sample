@@ -93,7 +93,26 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
         assert(n % m == 0);
       }
     } *)
-let post = term (Tif (mk_Tvar "res", (* if res *)
+
+let body = 
+    let body' = 
+      let loop = expr (Ewhile (expr Etrue, [], [], expr Etrue)) in (* TODO *)
+    expr (Elet (ident "m", false, RKnone, eapp plus [mk_Evar "n"; econst (-1)], (* let m = n-1 *)
+    expr (Elet (ident "i", false, RKnone, econst 3, loop)))) in (* let i = 3; loop *)
+  expr (Eif ((eapp ge [econst 2; mk_Evar "n"]), expr Efalse, (* if n<2 then false *)
+  expr (Eif ((eapp eq [econst 2; mk_Evar "n"]), expr Etrue, (* if n=2 then true *)
+  expr (Eif ((eapp eq [eapp md [mk_Evar "n"; econst 2]; econst 0]), expr Efalse, body')))))) (* if n%2=0 then false else body' *)
+
+let expr5 : expr = expr (Efun (
+  one_binder ~pty:int_type "n", (* 引数 *)
+  None, (* 関数の型 *)
+  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
+  MaskVisible, (* 副作用？ *)
+  empty_spec, (* 仕様 *)
+  body)) 
+let example5_fun = Dlet (ident "is_prime", false, RKfunc, expr5)
+
+let post = term (Tif ((tapp (qualid ["is_prime"]) [mk_Tvar "n"]), (* if is_prime n *)
   term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
     prop_implies (prop_and
         (tapp ge [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
@@ -105,23 +124,9 @@ let post = term (Tif (mk_Tvar "res", (* if res *)
       (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
       (tapp eq [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
 
-let spec5 =  {
-  sp_pre =[tapp ge [(mk_Tvar "n"); (tconst 1)]];
-  sp_post = [(pos, [(mk_Pvar "res", post)])];
-  sp_xpost = [];
-  sp_reads = [];  
-  sp_writes = [];
-  sp_alias = [];
-  sp_variant = [];
-  sp_checkrw = false;
-  sp_diverge = false;
-  sp_partial = false
-}
-let expr5 : expr = expr (Efun (
-  one_binder ~pty:int_type "n", (* 引数 *)
-  None, (* 関数の型 *)
-  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
-  MaskVisible, (* 副作用？ *)
-  spec5, (* 仕様 *)
-  expr Etrue)) (* TODO *)
-let example5_fun = Dlet (ident "foo", false, RKnone, expr5)
+let spec5 : expr =  mk_assert (term (Tquant (
+  DTforall, 
+  one_binder ~pty:int_type "n", 
+  [], (* トリガー？ *)
+  prop_implies (tapp ge [(mk_Tvar "n"); (tconst 1)]) post)))
+let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
