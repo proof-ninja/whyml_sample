@@ -12,7 +12,8 @@ let type_check env path filename mlw_file =
 
 let build_mods env name decls =
   let use_int = use ~import:false (["int";"EuclideanDivision"]) in (* 使いたいライブラリによって変更 *)
-  let mlw_file = Ptree.Modules [(ident name, use_int::decls)] in
+  let use_ref = use ~import:false (["ref";"Ref"]) in
+  let mlw_file = Ptree.Modules [(ident name, use_int::use_ref::decls)] in
   Log.debug "%s" begin
       Format.asprintf "@[Construct Ptree Success:@\n%a@]@."
         (Mlw_printer.pp_mlw_file ~attr:true) mlw_file

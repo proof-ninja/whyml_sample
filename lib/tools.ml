@@ -12,10 +12,14 @@ let mk_Evar str = evar (qualid [str])
 let mk_Pvar str = pat_var (ident str)
 
 (* 二項演算 *)
-let eq = qualid [Ident.op_equ]
+let eq = qualid [Ident.op_equ] (* 論理 *)
+let eq_int = qualid ["Int"; Ident.op_infix "="]
 let plus = qualid ["Int";Ident.op_infix "+"] 
+let minus = qualid ["Int";Ident.op_infix "-"] 
 let ge = qualid ["Int";Ident.op_infix ">"] 
 let md = qualid ["EuclideanDivision"; "mod"] 
+let asgn = qualid ["Ref"; Ident.op_infix ":="]
+let bng = qualid ["Ref"; Ident.op_prefix "!"]
 
 let prop_and t1 t2 = term (Tbinop (t1, Dterm.DTand, t2))
 let prop_implies t1 t2 = term (Tbinop (t1, Dterm.DTimplies, t2))

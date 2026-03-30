@@ -96,12 +96,17 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 let body = 
     let body' = 
-      let loop = expr (Ewhile (expr Etrue, [], [], expr Etrue)) in (* TODO *)
-    expr (Elet (ident "m", false, RKnone, eapp plus [mk_Evar "n"; econst (-1)], (* let m = n-1 *)
-    expr (Elet (ident "i", false, RKnone, econst 3, loop)))) in (* let i = 3; loop *)
+      let loop = expr (Ewhile (expr Etrue, [], [(tapp minus [mk_Tvar "m"; tapp bng [mk_Tvar "i"]], None)], (* while true *)
+        expr (Eif (eapp ge [eapp bng [mk_Evar "i"]; mk_Evar "m"], eapp asgn [mk_Evar "res"; expr Etrue], (* if i > m then res := true *)
+        expr (Eif (eapp eq_int [eapp md [mk_Evar "n"; eapp bng [mk_Evar "i"]]; econst 0], eapp asgn [mk_Evar "res"; expr Efalse], (* else if n%i = 0 then res := false *)
+        expr (Eassign [(mk_Evar "i", None, eapp plus [eapp bng [mk_Evar "i"]; econst 2])]))))))) in (* else i <- i + 2 *)
+    expr (Elet (ident "m", false, RKnone, eapp minus [mk_Evar "n"; econst 1], (* let m = n-1 *)
+    expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 3),  (* let i = ref 3; *)
+    expr (Elet (ident "res", false, RKnone, eapply (expr Eref) (expr Etrue),  (* let res = ref true (ダミー); *)
+    expr (Esequence (loop, eapp bng [mk_Evar "res"])))))))) in (* loop; !res *)
   expr (Eif ((eapp ge [econst 2; mk_Evar "n"]), expr Efalse, (* if n<2 then false *)
-  expr (Eif ((eapp eq [econst 2; mk_Evar "n"]), expr Etrue, (* if n=2 then true *)
-  expr (Eif ((eapp eq [eapp md [mk_Evar "n"; econst 2]; econst 0]), expr Efalse, body')))))) (* if n%2=0 then false else body' *)
+  expr (Eif ((eapp eq_int [econst 2; mk_Evar "n"]), expr Etrue, (* if n=2 then true *)
+  expr (Eif ((eapp eq_int [eapp md [mk_Evar "n"; econst 2]; econst 0]), expr Efalse, body')))))) (* if n%2=0 then false else body' *)
 
 let expr5 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
