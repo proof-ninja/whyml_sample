@@ -61,6 +61,35 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 
 (* ----- example 5 -----
+    fn loop {
+      let mut i: u64 = 1;
+      while i > 0 {
+        i = i-1;
+      }
+    } 
+*)
+
+let body = 
+  let loop = 
+    expr (Ewhile ((eapp ge [eapp bng [mk_Evar "i"]; econst 0]), [tapp ge [tapp bng [mk_Tvar "i"]; tconst 0]], [(mk_Tvar "i", None)], (* while i>0 *)
+    expr (Eassign [(mk_Evar "i", None, eapp minus [eapp bng [mk_Evar "i"]; econst 1])]))) in (* i <- i-1 *)
+  expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 1),  (* let i = ref 1; *)
+  expr (Esequence (loop, eapp bng [mk_Evar "i"])))) (* loop; !i *)
+
+let expr5 : expr = expr (Efun (
+  [], (* 引数 *)
+  None, (* 関数の型 *)
+  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
+  MaskVisible, (* 副作用？ *)
+  empty_spec, (* 仕様 *)
+  body)) 
+let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
+
+let spec5 = mk_assert (tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) (* loop() = 0 *)
+let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
+
+
+(* ----- example 6 -----
     fn is_prime(n: u64) -> bool {
       if n < 2 { return false; }
       if n == 2 { return true; }
@@ -108,14 +137,14 @@ let body =
   expr (Eif ((eapp eq_int [econst 2; mk_Evar "n"]), expr Etrue, (* if n=2 then true *)
   expr (Eif ((eapp eq_int [eapp md [mk_Evar "n"; econst 2]; econst 0]), expr Efalse, body')))))) (* if n%2=0 then false else body' *)
 
-let expr5 : expr = expr (Efun (
+let expr6 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
   empty_spec, (* 仕様 *)
   body)) 
-let example5_fun = Dlet (ident "is_prime", false, RKfunc, expr5)
+let example6_fun = Dlet (ident "is_prime", false, RKfunc, expr6)
 
 let post = term (Tif ((tapp (qualid ["is_prime"]) [mk_Tvar "n"]), (* if is_prime n *)
   term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
@@ -129,9 +158,9 @@ let post = term (Tif ((tapp (qualid ["is_prime"]) [mk_Tvar "n"]), (* if is_prime
       (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
       (tapp eq [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
 
-let spec5 : expr =  mk_assert (term (Tquant (
+let spec6 : expr =  mk_assert (term (Tquant (
   DTforall, 
   one_binder ~pty:int_type "n", 
   [], (* トリガー？ *)
   prop_implies (tapp ge [(mk_Tvar "n"); (tconst 1)]) post)))
-let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
+let example6_spec = Dlet (ident "spec", false, RKnone, spec6)
