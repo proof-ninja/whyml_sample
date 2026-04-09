@@ -66,24 +66,36 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
       while i > 0 {
         i = i-1;
       }
+      return i
     } 
 *)
 
 let body = 
   let loop = 
     expr (Ewhile ((eapp ge [eapp bng [mk_Evar "i"]; econst 0]), (* while i>0 *)
-      [tapp ge [tapp bng [mk_Tvar "i"]; tconst (-1)]], (* {invariant : i > -1} *)
+      [], (* invariant は今回に関してはなくても証明可能 *)
       [(tapp bng [mk_Tvar "i"], None)], (* {variant : i} *)
     expr (Eassign [(mk_Evar "i", None, eapp minus [eapp bng [mk_Evar "i"]; econst 1])]))) in (* i <- i-1 *)
   expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 1),  (* let i = ref 1; *)
-  expr (Esequence (loop, eapp bng [mk_Evar "i"])))) (* loop; !i *)
+  expr (Esequence (loop, eapp bng [mk_Evar "i"])))) (* loop; return i *)
 
 let expr5 : expr = expr (Efun (
   [], (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
-  empty_spec, (* 仕様 *)
+  {
+    sp_pre =[];
+    sp_post = [(pos, [(mk_Pvar "i", tapp eq [(mk_Tvar "i"); tconst 0])])];
+    sp_xpost = [];
+    sp_reads = [];  
+    sp_writes = [];
+    sp_alias = [];
+    sp_variant = [];
+    sp_checkrw = false;
+    sp_diverge = false;
+    sp_partial = false
+  }, (* 仕様 *)
   body)) 
 let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
 
