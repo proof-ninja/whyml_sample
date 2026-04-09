@@ -71,7 +71,9 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 let body = 
   let loop = 
-    expr (Ewhile ((eapp ge [eapp bng [mk_Evar "i"]; econst 0]), [tapp ge [tapp bng [mk_Tvar "i"]; tconst 0]], [(mk_Tvar "i", None)], (* while i>0 *)
+    expr (Ewhile ((eapp ge [eapp bng [mk_Evar "i"]; econst 0]), (* while i>0 *)
+      [tapp ge [tapp bng [mk_Tvar "i"]; tconst (-1)]], (* {invariant : i > -1} *)
+      [(tapp bng [mk_Tvar "i"], None)], (* {variant : i} *)
     expr (Eassign [(mk_Evar "i", None, eapp minus [eapp bng [mk_Evar "i"]; econst 1])]))) in (* i <- i-1 *)
   expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 1),  (* let i = ref 1; *)
   expr (Esequence (loop, eapp bng [mk_Evar "i"])))) (* loop; !i *)
