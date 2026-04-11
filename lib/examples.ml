@@ -86,7 +86,7 @@ let expr5 : expr = expr (Efun (
   MaskVisible, (* 副作用？ *)
   {
     sp_pre =[];
-    sp_post = [(pos, [(mk_Pvar "i", tapp eq [(mk_Tvar "i"); tconst 0])])];
+    sp_post = [(pos, [(mk_Pvar "res", tapp eq [(mk_Tvar "res"); tconst 0])])];
     sp_xpost = [];
     sp_reads = [];  
     sp_writes = [];
@@ -101,7 +101,7 @@ let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
 
 let spec5 = mk_assert (tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) (* loop() = 0 *)
 let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
-
+(* let example5_spec = Dprop (Pgoal, ident "spec", tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) *)
 
 (* ----- example 6 -----
     fn is_prime(n: u64) -> bool {
