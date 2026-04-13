@@ -61,7 +61,7 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 
 (* ----- example 5 -----
-    fn loop {
+    fn loop () {
       let mut i: u64 = 1;
       while i > 0 {
         i = i-1;
@@ -80,7 +80,7 @@ let body =
   expr (Esequence (loop, eapp bng [mk_Evar "i"])))) (* loop; return i *)
 
 let expr5 : expr = expr (Efun (
-  [], (* 引数 *)
+  unit_binder (), (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
@@ -99,7 +99,7 @@ let expr5 : expr = expr (Efun (
   body)) 
 let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
 
-let spec5 = mk_assert (tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) (* loop() = 0 *)
+let spec5 = mk_assert (tapp eq_int [(tapp (qualid ["loop"]) [term (Ttuple [])]); tconst 0]) (* loop() = 0 *)
 let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
 (* let example5_spec = Dprop (Pgoal, ident "spec", tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) *)
 
