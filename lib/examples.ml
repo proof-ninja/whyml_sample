@@ -55,8 +55,8 @@ let expr4 : expr = expr (Efun (
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
   empty_spec, (* 仕様 *)
-  expr (Esequence (mk_assume (tapp ge [(mk_Tvar "n"); (tconst 0)]),
-  mk_assert (tapp ge [(mk_Tvar "n"); (tconst 0)])))))
+  expr (Esequence (mk_assume (tapp gt [(mk_Tvar "n"); (tconst 0)]),
+  mk_assert (tapp gt [(mk_Tvar "n"); (tconst 0)])))))
 let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 
@@ -72,8 +72,8 @@ let example4 = Dlet (ident "foo", false, RKnone, expr4)
 
 let body = 
   let loop = 
-    expr (Ewhile ((eapp ge [eapp bng [mk_Evar "i"]; econst 0]), (* while i>0 *)
-      [], (* invariant は今回に関してはなくても証明可能 *)
+    expr (Ewhile ((eapp gt [eapp bng [mk_Evar "i"]; econst 0]), (* while i>0 *)
+      [tapp ge [tapp bng [mk_Tvar "i"]; tconst 0]], (* {invariant : i >= 0} 仕様の証明に必要 *)
       [(tapp bng [mk_Tvar "i"], None)], (* {variant : i} *)
     expr (Eassign [(mk_Evar "i", None, eapp minus [eapp bng [mk_Evar "i"]; econst 1])]))) in (* i <- i-1 *)
   expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 1),  (* let i = ref 1; *)
@@ -82,7 +82,7 @@ let body =
 let expr5 : expr = expr (Efun (
   unit_binder (), (* 引数 *)
   None, (* 関数の型 *)
-  pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
+  pat Pwild, (* 返り値パターン *)
   MaskVisible, (* 副作用？ *)
   {
     sp_pre =[];
@@ -95,7 +95,9 @@ let expr5 : expr = expr (Efun (
     sp_checkrw = false;
     sp_diverge = false;
     sp_partial = false
-  }, (* 仕様 *)
+  }
+  (* empty_spec *)
+  , (* 仕様 *)
   body)) 
 let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
 
@@ -140,14 +142,14 @@ let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
 let body = 
     let body' = 
       let loop = expr (Ewhile (expr Etrue, [], [(tapp minus [mk_Tvar "m"; tapp bng [mk_Tvar "i"]], None)], (* while true *)
-        expr (Eif (eapp ge [eapp bng [mk_Evar "i"]; mk_Evar "m"], eapp asgn [mk_Evar "res"; expr Etrue], (* if i > m then res := true *)
+        expr (Eif (eapp gt [eapp bng [mk_Evar "i"]; mk_Evar "m"], eapp asgn [mk_Evar "res"; expr Etrue], (* if i > m then res := true *)
         expr (Eif (eapp eq_int [eapp md [mk_Evar "n"; eapp bng [mk_Evar "i"]]; econst 0], eapp asgn [mk_Evar "res"; expr Efalse], (* else if n%i = 0 then res := false *)
         expr (Eassign [(mk_Evar "i", None, eapp plus [eapp bng [mk_Evar "i"]; econst 2])]))))))) in (* else i <- i + 2 *)
     expr (Elet (ident "m", false, RKnone, eapp minus [mk_Evar "n"; econst 1], (* let m = n-1 *)
     expr (Elet (ident "i", false, RKnone, eapply (expr Eref) (econst 3),  (* let i = ref 3; *)
     expr (Elet (ident "res", false, RKnone, eapply (expr Eref) (expr Etrue),  (* let res = ref true (ダミー); *)
     expr (Esequence (loop, eapp bng [mk_Evar "res"])))))))) in (* loop; !res *)
-  expr (Eif ((eapp ge [econst 2; mk_Evar "n"]), expr Efalse, (* if n<2 then false *)
+  expr (Eif ((eapp gt [econst 2; mk_Evar "n"]), expr Efalse, (* if n<2 then false *)
   expr (Eif ((eapp eq_int [econst 2; mk_Evar "n"]), expr Etrue, (* if n=2 then true *)
   expr (Eif ((eapp eq_int [eapp md [mk_Evar "n"; econst 2]; econst 0]), expr Efalse, body')))))) (* if n%2=0 then false else body' *)
 
@@ -163,18 +165,18 @@ let example6_fun = Dlet (ident "is_prime", false, RKfunc, expr6)
 let post = term (Tif ((tapp (qualid ["is_prime"]) [mk_Tvar "n"]), (* if is_prime n *)
   term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
     prop_implies (prop_and
-        (tapp ge [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
-        (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m -> *)
-      (tapp ge [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))), (* mod n m > 0 *)
+        (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+        (tapp gt [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m -> *)
+      (tapp gt [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))), (* mod n m > 0 *)
   term (Tquant (DTexists, one_binder ~pty:int_type "m", [], (* else exists m, *)
     prop_and (prop_and
-      (tapp ge [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
-      (tapp ge [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
+      (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+      (tapp gt [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
       (tapp eq [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
 
 let spec6 : expr =  mk_assert (term (Tquant (
   DTforall, 
   one_binder ~pty:int_type "n", 
   [], (* トリガー？ *)
-  prop_implies (tapp ge [(mk_Tvar "n"); (tconst 1)]) post)))
+  prop_implies (tapp gt [(mk_Tvar "n"); (tconst 1)]) post)))
 let example6_spec = Dlet (ident "spec", false, RKnone, spec6)
