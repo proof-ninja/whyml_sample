@@ -41,3 +41,27 @@ intros. repeat split; lia.
 Qed.
 
 End Fun_with_spec.
+
+
+Module IsPrime.
+Theorem is_prime'vc :
+(* 元の定理から， int...mod1 を Z.modulo に変更した *)
+  forall (n:Numbers.BinNums.Z), ~ (n < 2%Z)%Z -> ~ (2%Z = n) ->
+  ~ (2%Z = 0%Z) /\
+  (~ ((Z.modulo n 2%Z) = 0%Z) ->
+   (let m := (n - 1%Z)%Z in
+    forall (i:Numbers.BinNums.Z), (i <= m)%Z ->
+    ~ (i = 0%Z) /\
+    (((Z.modulo n i) = 0%Z) ->
+     (forall (res:Init.Datatypes.bool), (res = Init.Datatypes.false) ->
+      (0%Z <= ((m - i)%Z + 2%Z)%Z)%Z /\
+      (((m - i)%Z + 2%Z)%Z < ((m - i)%Z + 2%Z)%Z)%Z)) /\
+    (~ ((Z.modulo n i) = 0%Z) ->
+     (forall (i1:Numbers.BinNums.Z), (i1 = (i + 2%Z)%Z) ->
+      (0%Z <= ((m - i)%Z + 2%Z)%Z)%Z /\
+      (((m - i1)%Z + 2%Z)%Z < ((m - i)%Z + 2%Z)%Z)%Z)))).
+Proof.
+intros n h1 h2. repeat split; try lia.
+
+Qed.
+End IsPrime.
