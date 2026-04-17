@@ -8,3 +8,5 @@
 - `why3 config detect` を実行して Coq を認識させる
 
 - `dune build` でビルド， `dune exec (/bin フォルダのファイルから .ml を取った名前)` で実行
+
+- `why3 pp --output=sexp (mlw ファイル)` で具体的な WhyML のコードがどのように Ptree の項にされているかが見られるので，参考に． 
