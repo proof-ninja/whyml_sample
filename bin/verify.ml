@@ -66,4 +66,4 @@ let verify name expr =
       Driver.print_task coq_driver Format.std_formatter task) tasks
 
 
-let _ = verify "dummy" [example6_fun]
+let _ = verify "dummy" [example6_fun; example6_spec]

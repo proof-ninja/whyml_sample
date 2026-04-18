@@ -101,6 +101,7 @@ let expr5 : expr = expr (Efun (
   body)) 
 let example5_fun = Dlet (ident "loop", false, RKfunc, expr5)
 
+(* 以下の spec は関数項の中の仕様なしでは証明できない（関数が Parameter となるため） *)
 let spec5 = mk_assert (tapp eq_int [(tapp (qualid ["loop"]) [term (Ttuple [])]); tconst 0]) (* loop() = 0 *)
 let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
 (* let example5_spec = Dprop (Pgoal, ident "spec", tapp eq_int [(tapp (qualid ["loop"]) []); tconst 0]) *)
@@ -142,7 +143,10 @@ let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
 let body = 
     let body' = 
       let loop = expr (Ewhile (expr Etrue, (* while true *)
-        [tapp gt [tapp bng [mk_Tvar "i"]; tconst 0]], (* {invariant : i>0} i で割るために必要 *)
+        [ tapp gt [tapp bng [mk_Tvar "i"]; tconst 1]; (* {invariant : i>1} i で割るために必要．仕様の確認にも使うため 0 ではなく 1 にしている *)
+          term (Tquant (DTforall, one_binder ~pty:int_type "k", [], (* forall k, *)
+            prop_implies (prop_and (tapp gt [mk_Tvar "k"; tconst 1]) (tapp gt [tapp bng [mk_Tvar "i"]; mk_Tvar "k"])) (* 1 < k < i -> *)
+            (tapp gt [tapp md [mk_Tvar "n"; mk_Tvar "k"]; tconst 0])))], (* mod n k > 0 *)
         [(tapp plus [tapp minus [mk_Tvar "m"; tapp bng [mk_Tvar "i"]]; tconst 2], None)], (* {variant : m-i+2} 0 以上であるようにする *)
         expr (Eif (eapp gt [eapp bng [mk_Evar "i"]; mk_Evar "m"], mk_return (expr Etrue), (* if i > m then return true *)
         expr (Eif (eapp eq_int [eapp md [mk_Evar "n"; eapp bng [mk_Evar "i"]]; econst 0], mk_return (expr Efalse), (* else if n%i = 0 then return false *)
@@ -157,26 +161,41 @@ let body =
   expr (Eif ((eapp eq_int [eapp md [mk_Evar "n"; econst 2]; econst 0]), mk_return (expr Efalse), (* if n%2=0 then false *)
   body')))))))) (* else body' *)
 
+let is_prime_spec bool n = 
+  term (Tif (bool, (* if bool *)
+    term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
+      prop_implies (prop_and
+          (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+          (tapp gt [n; (mk_Tvar "m")])) (* n > m -> *)
+        (tapp gt [tapp md [n; mk_Tvar "m"]; tconst 0]))), (* mod n m > 0 *)
+    term (Tquant (DTexists, one_binder ~pty:int_type "m", [], (* else exists m, *)
+      prop_and (prop_and
+        (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
+        (tapp gt [n; (mk_Tvar "m")])) (* n > m /\ *)
+        (tapp eq [tapp md [n; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
+
 let expr6 : expr = expr (Efun (
   one_binder ~pty:int_type "n", (* 引数 *)
   None, (* 関数の型 *)
   pat Pwild, (* 返り値パターン（タプルとかの場合もある） *)
   MaskVisible, (* 副作用？ *)
-  empty_spec, (* 仕様 *)
+  {
+    sp_pre = [tapp gt [(mk_Tvar "n"); (tconst 1)]];
+    sp_post = [(pos, [(mk_Pvar "res", is_prime_spec (mk_Tvar "res") (mk_Tvar "n"))])];
+    sp_xpost = [];
+    sp_reads = [];  
+    sp_writes = [];
+    sp_alias = [];
+    sp_variant = [];
+    sp_checkrw = false;
+    sp_diverge = false;
+    sp_partial = false
+  }, (* 仕様 *)
   body)) 
 let example6_fun = Dlet (ident "is_prime", false, RKfunc, expr6)
 
-let post = term (Tif ((tapp (qualid ["is_prime"]) [mk_Tvar "n"]), (* if is_prime n *)
-  term (Tquant (DTforall, one_binder ~pty:int_type "m", [],  (* then forall m, *)
-    prop_implies (prop_and
-        (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
-        (tapp gt [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m -> *)
-      (tapp gt [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))), (* mod n m > 0 *)
-  term (Tquant (DTexists, one_binder ~pty:int_type "m", [], (* else exists m, *)
-    prop_and (prop_and
-      (tapp gt [(mk_Tvar "m"); (tconst 1)]) (* m > 1 /\ *)
-      (tapp gt [(mk_Tvar "n"); (mk_Tvar "m")])) (* n > m /\ *)
-      (tapp eq [tapp md [mk_Tvar "n"; mk_Tvar "m"]; tconst 0]))))) (* mod n m = 0 *)
+(* 以下の spec は関数項の中の仕様なしでは証明できない（関数が Parameter となるため） *)
+let post = is_prime_spec (tapp (qualid ["is_prime"]) [mk_Tvar "n"]) (mk_Tvar "n")
 
 let spec6 : expr =  mk_assert (term (Tquant (
   DTforall, 
