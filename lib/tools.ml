@@ -29,3 +29,5 @@ let prop_implies t1 t2 = term (Tbinop (t1, Dterm.DTimplies, t2))
 let mk_assert t = expr (Eassert (Assert, t))
 (* assume 文 *)
 let mk_assume t = expr (Eassert (Assume, t))
+
+let mk_return e = expr (Eraise (qualid ["Return"], Some e))

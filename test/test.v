@@ -50,18 +50,15 @@ Theorem is_prime'vc :
   ~ (2%Z = 0%Z) /\
   (~ ((Z.modulo n 2%Z) = 0%Z) ->
    (let m := (n - 1%Z)%Z in
-    forall (i:Numbers.BinNums.Z), (i <= m)%Z ->
-    ~ (i = 0%Z) /\
-    (((Z.modulo n i) = 0%Z) ->
-     (forall (res:Init.Datatypes.bool), (res = Init.Datatypes.false) ->
-      (0%Z <= ((m - i)%Z + 2%Z)%Z)%Z /\
-      (((m - i)%Z + 2%Z)%Z < ((m - i)%Z + 2%Z)%Z)%Z)) /\
-    (~ ((Z.modulo n i) = 0%Z) ->
-     (forall (i1:Numbers.BinNums.Z), (i1 = (i + 2%Z)%Z) ->
-      (0%Z <= ((m - i)%Z + 2%Z)%Z)%Z /\
-      (((m - i1)%Z + 2%Z)%Z < ((m - i)%Z + 2%Z)%Z)%Z)))).
+    (0%Z < 3%Z)%Z /\
+    (forall (i:Numbers.BinNums.Z), (0%Z < i)%Z -> ~ (m < i)%Z ->
+     ~ (i = 0%Z) /\
+     (~ ((Z.modulo n i) = 0%Z) ->
+      (forall (i1:Numbers.BinNums.Z), (i1 = (i + 2%Z)%Z) ->
+       ((0%Z <= ((m - i)%Z + 2%Z)%Z)%Z /\
+        (((m - i1)%Z + 2%Z)%Z < ((m - i)%Z + 2%Z)%Z)%Z) /\
+       (0%Z < i1)%Z))))).
 Proof.
-intros n h1 h2. repeat split; try lia.
-
+intros. repeat split; try lia.
 Qed.
 End IsPrime.
