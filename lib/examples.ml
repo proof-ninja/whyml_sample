@@ -143,10 +143,12 @@ let example5_spec = Dlet (ident "spec", false, RKnone, spec5)
 let body = 
     let body' = 
       let loop = expr (Ewhile (expr Etrue, (* while true *)
-        [ tapp gt [tapp bng [mk_Tvar "i"]; tconst 1]; (* {invariant : i>1} i で割るために必要．仕様の確認にも使うため 0 ではなく 1 にしている *)
-          term (Tquant (DTforall, one_binder ~pty:int_type "k", [], (* forall k, *)
+        [ tapp gt [tapp bng [mk_Tvar "i"]; tconst 1]; (* {invariant1 : i>1} i で割るために必要．仕様の確認にも使うため 0 ではなく 1 にしている *)
+          term (Tquant (DTforall, one_binder ~pty:int_type "k", [], (* {invariant2 : forall k, *)
             prop_implies (prop_and (tapp gt [mk_Tvar "k"; tconst 1]) (tapp gt [tapp bng [mk_Tvar "i"]; mk_Tvar "k"])) (* 1 < k < i -> *)
-            (tapp gt [tapp md [mk_Tvar "n"; mk_Tvar "k"]; tconst 0])))], (* mod n k > 0 *)
+            (tapp gt [tapp md [mk_Tvar "n"; mk_Tvar "k"]; tconst 0]))); (* mod n k > 0} *)
+          tapp gt [tapp md [tapp bng [mk_Tvar "i"]; tconst 2]; tconst 0] (* {invariant3 : mod i 2 > 0} *)
+        ],
         [(tapp plus [tapp minus [mk_Tvar "m"; tapp bng [mk_Tvar "i"]]; tconst 2], None)], (* {variant : m-i+2} 0 以上であるようにする *)
         expr (Eif (eapp gt [eapp bng [mk_Evar "i"]; mk_Evar "m"], mk_return (expr Etrue), (* if i > m then return true *)
         expr (Eif (eapp eq_int [eapp md [mk_Evar "n"; eapp bng [mk_Evar "i"]]; econst 0], mk_return (expr Efalse), (* else if n%i = 0 then return false *)
